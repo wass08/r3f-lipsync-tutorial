@@ -41,9 +41,9 @@ export function Avatar(props) {
     if (audio.paused || audio.ended) {
       setAnimation("Idle");
     }
-    const meshes = [nodes.Wolf3D_Head, nodes.Wolf3D_Teeth];
+
     Object.values(corresponding).forEach((value) => {
-      meshes.forEach((mesh) => {
+      skinnedMeshes.forEach((mesh) => {
         const target = mesh.morphTargetDictionary[value];
         const currentInfluence = mesh.morphTargetInfluences[target];
         if (currentInfluence > 0) {
@@ -63,7 +63,7 @@ export function Avatar(props) {
         currentAudioTime >= mouthCue.start &&
         currentAudioTime <= mouthCue.end
       ) {
-        meshes.forEach((mesh) => {
+        skinnedMeshes.forEach((mesh) => {
           const target =
             mesh.morphTargetDictionary[
             corresponding[mouthCue.value]
@@ -105,6 +105,12 @@ export function Avatar(props) {
   const { animations: greetingAnimation } = useFBX(
     "/animations/Standing Greeting.fbx"
   );
+
+  const skinnedMeshes = useMemo(() => {
+    const meshes = [nodes.Wolf3D_Head, nodes.Wolf3D_Teeth];
+
+    return meshes;
+  }, [nodes]);
 
   idleAnimation[0].name = "Idle";
   angryAnimation[0].name = "Angry";
