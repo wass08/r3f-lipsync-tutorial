@@ -23,9 +23,17 @@ const corresponding = {
 };
 
 export function Avatar(props) {
-  const { playAudio, script, headFollow } = useControls({
+  const {
+    playAudio,
+    script,
+    headFollow,
+    smoothMorphTarget,
+    morphTargetSmoothing,
+  } = useControls({
     playAudio: false,
     headFollow: true,
+    smoothMorphTarget: true,
+    morphTargetSmoothing: 0.5,
     script: {
       value: "welcome",
       options: ["welcome", "pizzas"],
@@ -40,15 +48,38 @@ export function Avatar(props) {
     const currentAudioTime = audio.currentTime;
     if (audio.paused || audio.ended) {
       setAnimation("Idle");
+      return;
     }
 
     Object.values(corresponding).forEach((value) => {
-      nodes.Wolf3D_Head.morphTargetInfluences[
-        nodes.Wolf3D_Head.morphTargetDictionary[value]
-      ] = 0;
-      nodes.Wolf3D_Teeth.morphTargetInfluences[
-        nodes.Wolf3D_Teeth.morphTargetDictionary[value]
-      ] = 0;
+      if (!smoothMorphTarget) {
+        nodes.Wolf3D_Head.morphTargetInfluences[
+          nodes.Wolf3D_Head.morphTargetDictionary[value]
+        ] = 0;
+        nodes.Wolf3D_Teeth.morphTargetInfluences[
+          nodes.Wolf3D_Teeth.morphTargetDictionary[value]
+        ] = 0;
+      } else {
+        nodes.Wolf3D_Head.morphTargetInfluences[
+          nodes.Wolf3D_Head.morphTargetDictionary[value]
+        ] = THREE.MathUtils.lerp(
+          nodes.Wolf3D_Head.morphTargetInfluences[
+            nodes.Wolf3D_Head.morphTargetDictionary[value]
+          ],
+          0,
+          morphTargetSmoothing
+        );
+
+        nodes.Wolf3D_Teeth.morphTargetInfluences[
+          nodes.Wolf3D_Teeth.morphTargetDictionary[value]
+        ] = THREE.MathUtils.lerp(
+          nodes.Wolf3D_Teeth.morphTargetInfluences[
+            nodes.Wolf3D_Teeth.morphTargetDictionary[value]
+          ],
+          0,
+          morphTargetSmoothing
+        );
+      }
     });
 
     for (let i = 0; i < lipsync.mouthCues.length; i++) {
@@ -57,20 +88,58 @@ export function Avatar(props) {
         currentAudioTime >= mouthCue.start &&
         currentAudioTime <= mouthCue.end
       ) {
-        nodes.Wolf3D_Head.morphTargetInfluences[
-          nodes.Wolf3D_Head.morphTargetDictionary[corresponding[mouthCue.value]]
-        ] = 1;
-        nodes.Wolf3D_Teeth.morphTargetInfluences[
-          nodes.Wolf3D_Teeth.morphTargetDictionary[
-            corresponding[mouthCue.value]
-          ]
-        ] = 1;
+        if (!smoothMorphTarget) {
+          nodes.Wolf3D_Head.morphTargetInfluences[
+            nodes.Wolf3D_Head.morphTargetDictionary[
+              corresponding[mouthCue.value]
+            ]
+          ] = 1;
+          nodes.Wolf3D_Teeth.morphTargetInfluences[
+            nodes.Wolf3D_Teeth.morphTargetDictionary[
+              corresponding[mouthCue.value]
+            ]
+          ] = 1;
+        } else {
+          nodes.Wolf3D_Head.morphTargetInfluences[
+            nodes.Wolf3D_Head.morphTargetDictionary[
+              corresponding[mouthCue.value]
+            ]
+          ] = THREE.MathUtils.lerp(
+            nodes.Wolf3D_Head.morphTargetInfluences[
+              nodes.Wolf3D_Head.morphTargetDictionary[
+                corresponding[mouthCue.value]
+              ]
+            ],
+            1,
+            morphTargetSmoothing
+          );
+          nodes.Wolf3D_Teeth.morphTargetInfluences[
+            nodes.Wolf3D_Teeth.morphTargetDictionary[
+              corresponding[mouthCue.value]
+            ]
+          ] = THREE.MathUtils.lerp(
+            nodes.Wolf3D_Teeth.morphTargetInfluences[
+              nodes.Wolf3D_Teeth.morphTargetDictionary[
+                corresponding[mouthCue.value]
+              ]
+            ],
+            1,
+            morphTargetSmoothing
+          );
+        }
+
         break;
       }
     }
   });
 
   useEffect(() => {
+    nodes.Wolf3D_Head.morphTargetInfluences[
+      nodes.Wolf3D_Head.morphTargetDictionary["viseme_I"]
+    ] = 1;
+    nodes.Wolf3D_Teeth.morphTargetInfluences[
+      nodes.Wolf3D_Teeth.morphTargetDictionary["viseme_I"]
+    ] = 1;
     if (playAudio) {
       audio.play();
       if (script === "welcome") {
