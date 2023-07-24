@@ -1,10 +1,6 @@
-# r3f-vite-starter
-A boilerplate to build R3F projects
 
-```
-yarn
-yarn dev
-```
+![Thumbnail](https://github.com/wass08/r3f-lipsync-tutorial/assets/6551176/b53625c5-88d0-4a84-ae4b-3da63d40b240)
 
+[Live preview](https://r3f-lipsync-tutorial.vercel.app/)
 
-![image](https://user-images.githubusercontent.com/6551176/221732091-23ee52cb-4150-42fa-b998-43628d7a6b0d.png)
+[Video tutorial](https://youtu.be/egQFAeu6Ihw)
