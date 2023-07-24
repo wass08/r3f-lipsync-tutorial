@@ -41,14 +41,20 @@ export function Avatar(props) {
     if (audio.paused || audio.ended) {
       setAnimation("Idle");
     }
-
+    const meshes = [nodes.Wolf3D_Head, nodes.Wolf3D_Teeth];
     Object.values(corresponding).forEach((value) => {
-      nodes.Wolf3D_Head.morphTargetInfluences[
-        nodes.Wolf3D_Head.morphTargetDictionary[value]
-      ] = 0;
-      nodes.Wolf3D_Teeth.morphTargetInfluences[
-        nodes.Wolf3D_Teeth.morphTargetDictionary[value]
-      ] = 0;
+      meshes.forEach((mesh) => {
+        const target = mesh.morphTargetDictionary[value];
+        const currentInfluence = mesh.morphTargetInfluences[target];
+        if (currentInfluence > 0) {
+          // Decrease the influence smoothly over time
+          mesh.morphTargetInfluences[target] = THREE.MathUtils.lerp(
+            currentInfluence,
+            0,
+            0.5
+          );
+        }
+      });
     });
 
     for (let i = 0; i < lipsync.mouthCues.length; i++) {
@@ -57,14 +63,19 @@ export function Avatar(props) {
         currentAudioTime >= mouthCue.start &&
         currentAudioTime <= mouthCue.end
       ) {
-        nodes.Wolf3D_Head.morphTargetInfluences[
-          nodes.Wolf3D_Head.morphTargetDictionary[corresponding[mouthCue.value]]
-        ] = 1;
-        nodes.Wolf3D_Teeth.morphTargetInfluences[
-          nodes.Wolf3D_Teeth.morphTargetDictionary[
+        meshes.forEach((mesh) => {
+          const target =
+            mesh.morphTargetDictionary[
             corresponding[mouthCue.value]
-          ]
-        ] = 1;
+            ];
+          const currentInfluence = mesh.morphTargetInfluences[target];
+          // Increase the influence smoothly over time
+          mesh.morphTargetInfluences[target] = THREE.MathUtils.lerp(
+            currentInfluence,
+            1,
+            0.5
+          );
+        });
         break;
       }
     }
@@ -84,7 +95,9 @@ export function Avatar(props) {
     }
   }, [playAudio, script]);
 
-  const { nodes, materials } = useGLTF("/models/646d9dcdc8a5f5bddbfac913.glb");
+  const { nodes, materials } = useGLTF(
+    "/models/646d9dcdc8a5f5bddbfac913.glb"
+  );
   const { animations: idleAnimation } = useFBX("/animations/Idle.fbx");
   const { animations: angryAnimation } = useFBX(
     "/animations/Angry Gesture.fbx"
